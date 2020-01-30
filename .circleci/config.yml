@@ -1,0 +1,26 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: ubuntu:bionic
+    steps:
+      - checkout
+      - run:
+          name: Setup Miniconda
+          command: |
+            apt update
+            apt install -y wget
+            cd $HOME
+            wget "https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh" -O miniconda.sh
+            printf '%s' "bfe34e1fa28d6d75a7ad05fd02fa5472275673d5f5621b77380898dee1be15d2  miniconda.sh" | sha256sum -c
+            bash miniconda.sh -b -p $HOME/miniconda
+            echo export PATH="$HOME/miniconda/bin:$PATH" > $BASH_ENV
+            conda create -y --name py37 python=3.7
+            conda init bash
+      - run:
+          name: Setup environment and run tests
+          command: |
+            conda activate py37
+            pip install .
+            pip install pytest pytest-cov
+            pytest
